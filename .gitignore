@@ -1,3 +1,5 @@
 pom.xml
 jdbcEx1.iml
 .idea
+target
+src/main/resources/db.properties
