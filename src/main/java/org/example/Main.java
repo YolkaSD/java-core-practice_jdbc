@@ -20,6 +20,7 @@ public class Main {
             System.out.println("3. Внести запись отношение Users");
             System.out.println("4. Удалить запись в отношении Users по id");
             System.out.println("5. Обновить запись в отношении Users по id");
+            System.out.println("6. Вывести все записи в отношении Users");
 
             int id;
             int age;
@@ -67,6 +68,10 @@ public class Main {
                     } else {
                         System.out.println("Статус операции: " + false);
                     }
+                    break;
+
+                case "6":
+                    System.out.println(dbStatement.selectAllFromUsers());
                     break;
             }
 

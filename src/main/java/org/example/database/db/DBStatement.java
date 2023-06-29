@@ -1,9 +1,7 @@
 package org.example.database.db;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.StringJoiner;
 
 public class DBStatement {
     private Connection connection;
@@ -13,17 +11,8 @@ public class DBStatement {
     }
 
     public boolean createTableUsers() {
-        String createTable = "CREATE TABLE users (" +
-                "id BIGSERIAL NOT NULL PRIMARY KEY, " +
-                "name VARCHAR(60) NOT NULL, " +
-                "age int NOT NULL" +
-                ");";
+        String createTable = "CREATE TABLE users (" + "id BIGSERIAL NOT NULL PRIMARY KEY, " + "name VARCHAR(60) NOT NULL, " + "age int NOT NULL" + ");";
         boolean result = false;
-        try {
-            connection.setAutoCommit(false);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
         try (PreparedStatement statement = connection.prepareStatement(createTable)) {
             statement.executeUpdate();
             result = true;
@@ -106,6 +95,30 @@ public class DBStatement {
         }
 
         return result;
+    }
+
+    public String selectAllFromUsers() {
+        String selectQuery = "SELECT * FROM users;";
+        StringJoiner stringJoiner = new StringJoiner("");
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectQuery); ResultSet resultSet = preparedStatement.executeQuery()) {
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int columnsCount = resultSetMetaData.getColumnCount();
+            for (int i = 1; i <= columnsCount; i++) {
+                stringJoiner.add(resultSetMetaData.getColumnLabel(i)).add("\t");
+            }
+            stringJoiner.add("\n");
+
+            while (resultSet.next()) {
+                for (int i = 1; i <= columnsCount; i++) {
+                    stringJoiner.add(resultSet.getString(i)).add("\t");
+                }
+                stringJoiner.add("\n");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return stringJoiner.toString();
     }
 
     private void printErr(int id) {
