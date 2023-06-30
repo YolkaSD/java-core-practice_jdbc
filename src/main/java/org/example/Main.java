@@ -1,16 +1,18 @@
 package org.example;
 
+import org.example.database.dao.JdbcUserDao;
 import org.example.database.db.DBConnection;
 import org.example.database.db.DBStatement;
+import org.example.database.model.UserDTO;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) throws SQLException, IOException, IllegalAccessException {
+    public static void main(String[] args) {
+
         DBConnection connection = new DBConnection();
         DBStatement dbStatement = new DBStatement(connection.connect());
+        JdbcUserDao jdbcUserDao = new JdbcUserDao(connection.connect());
         System.out.println("Подключение к базе данных: " + connection.connect() + "\n" + "_____________________");
         while (true) {
             Scanner scanner = new Scanner(System.in);
@@ -38,14 +40,14 @@ public class Main {
                     name = scanner.next();
                     System.out.print("Возраст: ");
                     age = scanner.nextInt();
-                    System.out.println("Статус операции: " + dbStatement.insertIntoTableUsers(name, age));
+                    System.out.println("Статус операции: " + jdbcUserDao.insert(new UserDTO(name, age)));
                     break;
                 case "4":
                     System.out.println("Введите id пользователя для удаления");
                     System.out.print("id: ");
                     id = scanner.nextInt();
-                    if (dbStatement.hasIdInTableUsers(id)) {
-                        dbStatement.deleteUserFromTableUsers(id);
+                    boolean deleteStatus = jdbcUserDao.deleteById(id);
+                    if (deleteStatus) {
                         System.out.println("Статус операции: " + true);
                     } else {
                         System.out.println("Статус операции: " + false);
@@ -56,22 +58,24 @@ public class Main {
                     System.out.println("Введите id пользователя для изменения данных");
                     System.out.print("id: ");
                     id = scanner.nextInt();
-                    if (dbStatement.hasIdInTableUsers(id)) {
+                    if (jdbcUserDao.hasIdInTable(id)) {
                         System.out.println("Введите данные (имя, возраст) для внесения новых данных в отношение users");
                         System.out.print("Имя: ");
                         name = scanner.next();
                         System.out.print("Возраст: ");
                         age = scanner.nextInt();
-                        dbStatement.updateUserFromTableUsers(id, name, age);
+                        jdbcUserDao.update(new UserDTO(id, name, age));
                         System.out.println("Статус операции: " + true);
-
                     } else {
                         System.out.println("Статус операции: " + false);
                     }
                     break;
 
                 case "6":
-                    System.out.println(dbStatement.selectAllFromUsers());
+                    System.out.println("id\tname\tage");
+                    for (UserDTO user: jdbcUserDao.selectAll()) {
+                        System.out.print(user.getId() + "\t" + user.getName() + "\t" + user.getAge() + "\n");
+                    }
                     break;
             }
 
